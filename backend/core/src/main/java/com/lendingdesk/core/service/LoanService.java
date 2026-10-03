@@ -101,10 +101,10 @@ public class LoanService {
     return new ReturnResult(returned, handOver(device));
   }
 
-  /** Active loans whose due time has passed, most overdue first. */
+  /** Overdue loans (see {@link LoanTerms}), most overdue first. */
   @Transactional
   public List<Loan> overdue() {
-    return loans.findActiveDueBefore(clock.instant());
+    return loans.findActiveDueBefore(terms.overdueCutoff(clock.instant()));
   }
 
   @Transactional
