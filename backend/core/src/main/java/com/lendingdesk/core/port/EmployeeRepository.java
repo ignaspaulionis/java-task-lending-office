@@ -7,6 +7,9 @@ import java.util.Optional;
 public interface EmployeeRepository {
   Optional<Employee> findById(Long id);
 
+  /** Reads the row and locks it until the current transaction ends. */
+  Optional<Employee> findByIdForUpdate(Long id);
+
   List<Employee> findAll();
 
   Employee save(Employee employee);

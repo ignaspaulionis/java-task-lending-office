@@ -1,15 +1,21 @@
 package com.lendingdesk.persistence.jpa;
 
 import com.lendingdesk.core.domain.Loan;
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface JpaLoanRepository
     extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select l from Loan l where l.id = :id")
+  Optional<Loan> findByIdForUpdate(Long id);
 
   @Query(
       """

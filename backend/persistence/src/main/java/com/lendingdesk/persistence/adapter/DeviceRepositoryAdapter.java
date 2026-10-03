@@ -37,6 +37,11 @@ public class DeviceRepositoryAdapter implements DeviceRepository {
   }
 
   @Override
+  public Optional<Device> findByIdForUpdate(Long id) {
+    return jpa.findByIdForUpdate(id);
+  }
+
+  @Override
   public boolean existsByInventoryTag(String inventoryTag) {
     return jpa.existsByInventoryTag(inventoryTag);
   }

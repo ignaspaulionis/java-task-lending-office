@@ -9,6 +9,9 @@ import java.util.Optional;
 public interface DeviceRepository {
   Optional<Device> findById(Long id);
 
+  /** Reads the row and locks it until the current transaction ends. */
+  Optional<Device> findByIdForUpdate(Long id);
+
   boolean existsByInventoryTag(String inventoryTag);
 
   /**

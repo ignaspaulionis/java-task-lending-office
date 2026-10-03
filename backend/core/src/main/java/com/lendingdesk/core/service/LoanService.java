@@ -42,17 +42,23 @@ public class LoanService {
     this.clock = clock;
   }
 
-  /** Lends a device to an employee for {@link LendingRules#LOAN_PERIOD}. */
+  /**
+   * Lends a device to an employee for {@link LendingRules#LOAN_PERIOD}.
+   *
+   * <p>Locks the device row, then the employee row, so that parallel requests cannot lend the
+   * same device twice or push an employee over the limit. Every method that takes several locks
+   * takes them in the order loan, device, employee to avoid deadlocks.
+   */
   @Transactional
   public Loan borrow(Long deviceId, Long employeeId) {
-    Employee employee =
-        employees
-            .findById(employeeId)
-            .orElseThrow(() -> new LendingException(ErrorCode.EMPLOYEE_NOT_FOUND));
     Device device =
         devices
-            .findById(deviceId)
+            .findByIdForUpdate(deviceId)
             .orElseThrow(() -> new LendingException(ErrorCode.DEVICE_NOT_FOUND));
+    Employee employee =
+        employees
+            .findByIdForUpdate(employeeId)
+            .orElseThrow(() -> new LendingException(ErrorCode.EMPLOYEE_NOT_FOUND));
     if (!employee.isActive()) {
       throw new LendingException(ErrorCode.EMPLOYEE_INACTIVE);
     }
@@ -79,7 +85,9 @@ public class LoanService {
   @Transactional
   public ReturnResult returnLoan(Long loanId, Long employeeId) {
     Loan loan =
-        loans.findById(loanId).orElseThrow(() -> new LendingException(ErrorCode.LOAN_NOT_FOUND));
+        loans
+            .findByIdForUpdate(loanId)
+            .orElseThrow(() -> new LendingException(ErrorCode.LOAN_NOT_FOUND));
     if (!loan.isActive()) {
       throw new LendingException(ErrorCode.LOAN_ALREADY_RETURNED);
     }
@@ -89,7 +97,8 @@ public class LoanService {
     loan.markReturned(clock.instant());
     // Flush now: the next loan of this device must not be inserted while this one looks active.
     Loan returned = loans.saveAndFlush(loan);
-    return new ReturnResult(returned, handOver(loan.getDevice()));
+    Device device = devices.findByIdForUpdate(loan.getDevice().getId()).orElseThrow();
+    return new ReturnResult(returned, handOver(device));
   }
 
   /** Active loans whose due time has passed, most overdue first. */
@@ -115,7 +124,7 @@ public class LoanService {
     }
     for (WaitlistEntry entry : waitlist.findByDevice(device.getId())) {
       waitlist.delete(entry);
-      Employee candidate = entry.getEmployee();
+      Employee candidate = employees.findByIdForUpdate(entry.getEmployee().getId()).orElseThrow();
       if (candidate.isActive() && !hasReachedLoanLimit(candidate.getId())) {
         lend(device, candidate);
         return candidate.getId();

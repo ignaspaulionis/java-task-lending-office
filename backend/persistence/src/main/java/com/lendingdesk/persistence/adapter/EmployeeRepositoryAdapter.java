@@ -23,6 +23,11 @@ public class EmployeeRepositoryAdapter implements EmployeeRepository {
   }
 
   @Override
+  public Optional<Employee> findByIdForUpdate(Long id) {
+    return jpa.findByIdForUpdate(id);
+  }
+
+  @Override
   public List<Employee> findAll() {
     return jpa.findAll(Sort.by("id"));
   }

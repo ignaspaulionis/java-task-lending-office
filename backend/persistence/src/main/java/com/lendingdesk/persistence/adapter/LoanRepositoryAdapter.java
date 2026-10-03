@@ -27,6 +27,11 @@ public class LoanRepositoryAdapter implements LoanRepository {
   }
 
   @Override
+  public Optional<Loan> findByIdForUpdate(Long id) {
+    return jpa.findByIdForUpdate(id);
+  }
+
+  @Override
   public List<Loan> findAll() {
     return jpa.findAll();
   }
