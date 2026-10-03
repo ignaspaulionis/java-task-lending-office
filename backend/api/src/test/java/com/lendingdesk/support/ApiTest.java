@@ -8,6 +8,7 @@ import jakarta.persistence.EntityManagerFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,11 +65,23 @@ public abstract class ApiTest {
         .id();
   }
 
+  /** Deactivates an employee through the API, keeping their name and email. */
   protected void deactivate(long employeeId) {
-    api.put(
-            "/api/employees/" + employeeId,
-            Map.of("name", "Inactive", "email", "inactive@example.com", "active", false))
-        .expectStatus(200);
+    updateEmployee(employeeId, false).expectStatus(200);
+  }
+
+  protected Response updateEmployee(long employeeId, boolean active) {
+    Response employees = api.get("/api/employees").expectStatus(200);
+    List<String> names = employees.json("$[?(@.id == " + employeeId + ")].name");
+    List<String> emails = employees.json("$[?(@.id == " + employeeId + ")].email");
+    return api.put(
+        "/api/employees/" + employeeId,
+        Map.of("name", names.getFirst(), "email", emails.getFirst(), "active", active));
+  }
+
+  /** Marks an employee inactive directly in the database, bypassing every rule. */
+  protected void markInactiveInDatabase(long employeeId) {
+    jdbc.update("UPDATE employees SET active = FALSE WHERE id = ?", employeeId);
   }
 
   protected long device(String name) {

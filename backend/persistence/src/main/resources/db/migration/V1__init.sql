@@ -21,7 +21,8 @@ CREATE TABLE loans (
     employee_id BIGINT      NOT NULL REFERENCES employees (id),
     borrowed_at TIMESTAMPTZ NOT NULL,
     due_at      TIMESTAMPTZ NOT NULL,
-    returned_at TIMESTAMPTZ
+    returned_at TIMESTAMPTZ,
+    extended    BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE waitlist_entries (

@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.time.Instant;
 
 @Entity
@@ -36,6 +37,9 @@ public class Loan {
   @Column(name = "returned_at")
   private Instant returnedAt;
 
+  @Column(nullable = false)
+  private boolean extended;
+
   protected Loan() {}
 
   public Loan(Device device, Employee employee, Instant borrowedAt, Instant dueAt) {
@@ -51,6 +55,15 @@ public class Loan {
 
   public void markReturned(Instant when) {
     this.returnedAt = when;
+  }
+
+  /** Moves the due date later. */
+  public void extend(Duration by) {
+    this.dueAt = dueAt.plus(by);
+  }
+
+  public boolean isExtended() {
+    return extended;
   }
 
   public Long getId() {

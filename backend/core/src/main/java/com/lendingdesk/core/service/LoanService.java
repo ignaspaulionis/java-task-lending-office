@@ -77,6 +77,15 @@ public class LoanService {
     return loans.findAll().stream().filter(loan -> terms.isOverdue(loan, now)).toList();
   }
 
+  /** Gives the borrower {@link LendingRules#EXTENSION} more time. */
+  @Transactional
+  public Loan extend(Long loanId, Long employeeId) {
+    Loan loan =
+        loans.findById(loanId).orElseThrow(() -> new LendingException(ErrorCode.LOAN_NOT_FOUND));
+    loan.extend(LendingRules.EXTENSION);
+    return loans.save(loan);
+  }
+
   @Transactional
   public List<Loan> list(Long employeeId, Boolean active) {
     return loans.find(employeeId, active);

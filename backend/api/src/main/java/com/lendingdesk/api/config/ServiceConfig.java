@@ -8,6 +8,7 @@ import com.lendingdesk.core.service.DeviceService;
 import com.lendingdesk.core.service.EmployeeService;
 import com.lendingdesk.core.service.LoanService;
 import com.lendingdesk.core.service.LoanTerms;
+import com.lendingdesk.core.service.ReminderService;
 import com.lendingdesk.core.service.WaitlistService;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +46,12 @@ public class ServiceConfig {
       EmployeeRepository employees,
       Clock clock) {
     return new WaitlistService(waitlist, devices, employees, clock);
+  }
+
+  @Bean
+  ReminderService reminderService(
+      LoanRepository loans, WaitlistRepository waitlist, Clock clock) {
+    return new ReminderService(loans, waitlist, clock);
   }
 
   @Bean

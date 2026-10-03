@@ -44,6 +44,8 @@ still pass. Do not change task tests to make them pass.
 - `GET /api/loans?employeeId=&active=` -> loans
 - `POST /api/loans` `{ deviceId, employeeId }` -> loan
 - `POST /api/loans/{id}/return` `{ employeeId }` -> `{ loan, nextEmployeeId }`
+- `POST /api/loans/{id}/extend` `{ employeeId }` -> loan
+- `GET /api/loans/{id}/reminder` -> `{ message }`
 - `GET /api/loans/overdue` -> loans
 - `POST /api/devices/{id}/waitlist` `{ employeeId }` -> `{ position, loan }`,
   `DELETE /api/devices/{id}/waitlist/{employeeId}`
@@ -53,7 +55,7 @@ Errors are returned as `application/problem+json` with a `code`, e.g.
 `409 { "code": "DEVICE_ALREADY_LOANED" }`.
 
 ## Assignments
-- [JuniorTasks.md](JuniorTasks.md) - business rules and basic performance
+- [JuniorTasks.md](JuniorTasks.md) - business rules, basic performance, indexes and a refactoring
 - [MidTasks.md](MidTasks.md) - database design, query performance, concurrency, time and money
 
 Reference solutions are on the `solutions` branch, one commit per task. Try a task

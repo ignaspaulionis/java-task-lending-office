@@ -39,7 +39,7 @@ class J04_HandOffOnReturnTest extends ApiTest {
     long loan = borrowOk(laptop, asta);
     joinWaitlist(laptop, jonas).expectStatus(201);
     joinWaitlist(laptop, ruta).expectStatus(201);
-    deactivate(jonas);
+    markInactiveInDatabase(jonas);
 
     Response returned = returnLoan(loan, asta).expectStatus(200);
 
@@ -75,7 +75,7 @@ class J04_HandOffOnReturnTest extends ApiTest {
     long laptop = device("Dell XPS 13");
     long loan = borrowOk(laptop, asta);
     joinWaitlist(laptop, jonas).expectStatus(201);
-    deactivate(jonas);
+    markInactiveInDatabase(jonas);
 
     Response returned = returnLoan(loan, asta).expectStatus(200);
 
