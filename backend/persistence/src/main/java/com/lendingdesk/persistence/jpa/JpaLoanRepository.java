@@ -5,6 +5,7 @@ import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
@@ -36,4 +37,22 @@ public interface JpaLoanRepository
       order by l.dueAt, l.id
       """)
   List<Loan> findActiveDueBefore(Instant cutoff);
+
+  @Query(
+      """
+      select d.id as deviceId, d.name as deviceName, count(l) as loanCount
+      from Loan l join l.device d
+      where l.borrowedAt >= :from and l.borrowedAt < :to
+      group by d.id, d.name
+      order by count(l) desc, d.name, d.id
+      """)
+  List<TopDeviceRow> findMostBorrowedDevices(Instant from, Instant to, Limit limit);
+
+  interface TopDeviceRow {
+    Long getDeviceId();
+
+    String getDeviceName();
+
+    Long getLoanCount();
+  }
 }

@@ -1,6 +1,7 @@
 package com.lendingdesk.persistence.adapter;
 
 import com.lendingdesk.core.domain.Loan;
+import com.lendingdesk.core.model.TopDevice;
 import com.lendingdesk.core.port.LoanRepository;
 import com.lendingdesk.persistence.jpa.JpaLoanRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -8,6 +9,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
@@ -71,6 +73,13 @@ public class LoanRepositoryAdapter implements LoanRepository {
   @Override
   public Optional<Loan> findActiveByDevice(Long deviceId) {
     return jpa.findByDeviceIdAndReturnedAtIsNull(deviceId);
+  }
+
+  @Override
+  public List<TopDevice> findMostBorrowedDevices(Instant from, Instant to, int limit) {
+    return jpa.findMostBorrowedDevices(from, to, Limit.of(limit)).stream()
+        .map(row -> new TopDevice(row.getDeviceId(), row.getDeviceName(), row.getLoanCount()))
+        .toList();
   }
 
   @Override

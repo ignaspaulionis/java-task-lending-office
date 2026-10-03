@@ -9,6 +9,7 @@ import com.lendingdesk.core.service.DeviceService;
 import com.lendingdesk.core.service.EmployeeService;
 import com.lendingdesk.core.service.LoanService;
 import com.lendingdesk.core.service.LoanTerms;
+import com.lendingdesk.core.service.ReportService;
 import com.lendingdesk.core.service.WaitlistService;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +55,11 @@ public class ServiceConfig {
   EmployeeService employeeService(
       EmployeeRepository employees, LoanRepository loans, WaitlistRepository waitlist) {
     return new EmployeeService(employees, loans, waitlist);
+  }
+
+  @Bean
+  ReportService reportService(LoanRepository loans) {
+    return new ReportService(loans);
   }
 
   @Bean
