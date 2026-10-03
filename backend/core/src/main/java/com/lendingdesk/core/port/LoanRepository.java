@@ -7,12 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LoanRepository {
-  Optional<Loan> findById(Long id);
-
   /** Reads the row and locks it until the current transaction ends. */
   Optional<Loan> findByIdForUpdate(Long id);
-
-  List<Loan> findAll();
 
   /** Loans filtered by employee and/or state; {@code null} means "any". Ordered by id. */
   List<Loan> find(Long employeeId, Boolean active);
