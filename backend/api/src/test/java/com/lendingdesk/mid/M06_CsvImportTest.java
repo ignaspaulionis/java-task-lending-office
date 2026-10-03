@@ -52,6 +52,18 @@ class M06_CsvImportTest extends ApiTest {
   }
 
   @Test
+  void fieldsLongerThanTheColumnsAreReported() {
+    String longName = "x".repeat(101);
+    Response report =
+        importCsv(HEADER + "NTL-400," + longName + ",LAPTOP\nNTL-401,Fine name,LAPTOP\n")
+            .expectStatus(200);
+
+    assertThat(report.longAt("$.imported")).isEqualTo(1);
+    assertThat((List<Map<String, Object>>) report.json("$.errors"))
+        .containsExactly(Map.of("line", 2, "reason", "FIELD_TOO_LONG"));
+  }
+
+  @Test
   void aFileWithAWrongHeaderIsRejectedAsAWhole() {
     importCsv("tag,name,category\nNTL-100,Dell XPS 13,LAPTOP\n")
         .expectProblem(400, "VALIDATION_FAILED");

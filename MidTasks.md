@@ -26,8 +26,8 @@ every waitlist entry.
 ## M03 - Device search and paging in SQL
 At the moment, `GET /api/devices` loads every device, then filters and pages them in Java
 with one extra query per device, and it ignores sorting.
-- Filters: `q` (case-insensitive part of name or tag), `category`, `available`. They work
-  alone and together.
+- Filters: `q` (case-insensitive part of name or tag, `%` and `_` match literally),
+  `category`, `available`. They work alone and together.
 - Paging with `page` and `size`; `size` is capped at 50; correct `totalElements` and
   `totalPages`.
 - Sorting by `name` or `inventoryTag`, `asc` or `desc`; ties are ordered by id. An unknown
@@ -58,8 +58,9 @@ Implement `POST /api/devices/import` (multipart field `file`, UTF-8).
   commas. Blank lines and Windows line endings are allowed.
 - Valid rows are imported. Invalid rows are skipped and reported with their line number
   (the header is line 1) and one of these reasons:
-  - `MISSING_FIELD`: a field is empty or missing.
+  - `MISSING_FIELD`: a field is empty, or the line doesn't have exactly three fields.
   - `INVALID_TAG`: the tag doesn't start with `NTL-`.
+  - `FIELD_TOO_LONG`: longer than the column allows (tag 50, name 100, category 50).
   - `DUPLICATE_IN_FILE`: the tag already appeared on an earlier line.
   - `TAG_EXISTS`: the tag is already in the database.
 - Response `200 { imported, errors: [{ line, reason }] }`.

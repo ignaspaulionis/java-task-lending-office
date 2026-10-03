@@ -35,6 +35,18 @@ class M03_DeviceSearchTest extends ApiTest {
   }
 
   @Test
+  void searchTextIsMatchedLiterally() {
+    insertDevice("NTL-1", "100% wool laptop sleeve", "ACCESSORY", "AVAILABLE");
+    insertDevice("NTL-2", "1000 page notebook", "ACCESSORY", "AVAILABLE");
+    insertDevice("NTL-3", "USB_C cable", "ACCESSORY", "AVAILABLE");
+    insertDevice("NTL-4", "USB-C cable", "ACCESSORY", "AVAILABLE");
+
+    assertThat(names(api.get("/api/devices?q={q}", "100%")))
+        .containsExactly("100% wool laptop sleeve");
+    assertThat(names(api.get("/api/devices?q={q}", "usb_c"))).containsExactly("USB_C cable");
+  }
+
+  @Test
   void pagesThroughTheResults() {
     for (int i = 0; i < 25; i++) {
       insertDevice("Laptop " + i);
@@ -101,7 +113,11 @@ class M03_DeviceSearchTest extends ApiTest {
   }
 
   private List<String> names(String url) {
-    return api.get(url).expectStatus(200).json("$.items[*].name");
+    return names(api.get(url));
+  }
+
+  private static List<String> names(Response response) {
+    return response.expectStatus(200).json("$.items[*].name");
   }
 
   private List<Long> ids(String url) {

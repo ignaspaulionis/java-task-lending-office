@@ -18,8 +18,9 @@ public class ApiClient {
     this.rest = RestClient.builder().baseUrl(baseUrl).build();
   }
 
-  public Response get(String path) {
-    return exchange(rest.get().uri(path));
+  /** GET with optional URI template variables, e.g. {@code get("/api/devices?q={q}", "50%")}. */
+  public Response get(String path, Object... uriVariables) {
+    return exchange(rest.get().uri(path, uriVariables));
   }
 
   public Response post(String path, Object body) {
