@@ -9,7 +9,10 @@ import com.lendingdesk.core.model.DeviceListItem;
 import com.lendingdesk.core.model.DeviceSearch;
 import com.lendingdesk.core.model.PageResult;
 import com.lendingdesk.core.service.DeviceService;
+import com.lendingdesk.core.error.ErrorCode;
+import com.lendingdesk.core.error.LendingException;
 import jakarta.validation.Valid;
+import java.util.Locale;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,7 +52,11 @@ public class DeviceController {
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(defaultValue = "name,asc") String sort) {
     String[] sortParts = sort.split(",", 2);
-    boolean ascending = sortParts.length < 2 || !"desc".equalsIgnoreCase(sortParts[1]);
+    String direction = sortParts.length < 2 ? "asc" : sortParts[1].toLowerCase(Locale.ROOT);
+    if (!direction.equals("asc") && !direction.equals("desc")) {
+      throw new LendingException(ErrorCode.VALIDATION_FAILED, "Unknown sort direction " + direction);
+    }
+    boolean ascending = direction.equals("asc");
     PageResult<DeviceListItem> result =
         devices.search(
             new DeviceSearch(q, category, available, page, size, sortParts[0], ascending));

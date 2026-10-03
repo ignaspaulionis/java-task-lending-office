@@ -10,11 +10,12 @@ import com.lendingdesk.core.model.PageResult;
 import com.lendingdesk.core.port.DeviceRepository;
 import com.lendingdesk.core.port.LoanRepository;
 import jakarta.transaction.Transactional;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.Set;
 
 public class DeviceService {
+
+  private static final int MAX_PAGE_SIZE = 50;
+  private static final Set<String> SORT_FIELDS = Set.of("name", "inventoryTag");
 
   private final DeviceRepository devices;
   private final LoanRepository loans;
@@ -24,20 +25,19 @@ public class DeviceService {
     this.loans = loans;
   }
 
-  /** One page of devices matching the search. */
+  /** One page of devices matching the search; ties in the sort order are broken by id. */
   @Transactional
   public PageResult<DeviceListItem> search(DeviceSearch search) {
-    List<DeviceListItem> matching =
-        devices.findAll().stream()
-            .sorted(Comparator.comparing(Device::getId))
-            .map(this::toListItem)
-            .filter(item -> matches(item, search))
-            .toList();
-    int from = Math.min(search.page() * search.size(), matching.size());
-    int to = Math.min(from + search.size(), matching.size());
-    int totalPages = (matching.size() + search.size() - 1) / search.size();
-    return new PageResult<>(
-        matching.subList(from, to), search.page(), search.size(), matching.size(), totalPages);
+    if (!SORT_FIELDS.contains(search.sortField())) {
+      throw new LendingException(ErrorCode.VALIDATION_FAILED, "Cannot sort by " + search.sortField());
+    }
+    String q = search.q() == null || search.q().isBlank() ? null : search.q().trim();
+    int size = Math.clamp(search.size(), 1, MAX_PAGE_SIZE);
+    int page = Math.max(search.page(), 0);
+    return devices.search(
+        new DeviceSearch(
+            q, search.category(), search.available(), page, size, search.sortField(),
+            search.ascending()));
   }
 
   @Transactional
@@ -70,22 +70,5 @@ public class DeviceService {
     Long loanedTo =
         loans.findActiveByDevice(device.getId()).map(loan -> loan.getEmployee().getId()).orElse(null);
     return new DeviceListItem(device, loanedTo);
-  }
-
-  private static boolean matches(DeviceListItem item, DeviceSearch search) {
-    Device device = item.device();
-    if (search.q() != null) {
-      String q = search.q().toLowerCase(Locale.ROOT);
-      boolean found =
-          device.getName().toLowerCase(Locale.ROOT).contains(q)
-              || device.getInventoryTag().toLowerCase(Locale.ROOT).contains(q);
-      if (!found) {
-        return false;
-      }
-    }
-    if (search.category() != null && !search.category().equals(device.getCategory())) {
-      return false;
-    }
-    return search.available() == null || search.available() == item.available();
   }
 }
