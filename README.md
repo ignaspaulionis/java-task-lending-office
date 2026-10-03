@@ -15,10 +15,24 @@ This repo holds two modules:
 - Docker (for PostgreSQL and the backend tests)
 
 ## Quick start
-1) Database: `cp .env.example .env && docker compose up -d db`
-2) Backend: `cd backend && ./gradlew :api:bootRun` (http://localhost:8080, seeds demo
-   employees and devices)
-3) Frontend: `cd frontend && npm ci && npm start` (http://localhost:4200)
+Run these from the repository root. The commands work in bash, PowerShell and cmd; on
+Windows, use `gradlew.bat` instead of `./gradlew`.
+
+1) Database: copy `.env.example` to `.env`, then start PostgreSQL:
+   ```
+   docker compose up -d db
+   ```
+2) Backend (http://localhost:8080, seeds demo employees and devices):
+   ```
+   cd backend
+   ./gradlew :api:bootRun
+   ```
+3) Frontend (http://localhost:4200), in another terminal:
+   ```
+   cd frontend
+   npm ci
+   npm start
+   ```
 
 The backend reads `DB_URL`, `DB_USER` and `DB_PASSWORD` from the environment or from the
 `.env` file in the repository root.
@@ -27,8 +41,9 @@ In IntelliJ IDEA, open the repository and link `backend/build.gradle` as a Gradl
 (right-click → *Link Gradle Project*) if it isn't detected automatically.
 
 ## Tests
-- `cd backend && ./gradlew test` - all tests (they start their own PostgreSQL container)
-- `./gradlew test --tests '*J01_*'` - tests for one task
+From the `backend` folder:
+- `./gradlew test` - all tests (they start their own PostgreSQL container)
+- `./gradlew test --tests "*J01_*"` - tests for one task
 
 Each task has its own test class named after the task id. The tests are the
 specification: a task is done when its tests pass and all other previously passing tests
@@ -59,9 +74,9 @@ Errors are returned as `application/problem+json` with a `code`, e.g.
 - [MidTasks.md](MidTasks.md) - database design, query performance, concurrency, time and money
 
 Reference solutions are on the `solutions` branch, one commit per task. Try a task
-yourself first. The solutions add a database migration, so after switching branches reset
-the local database with `docker compose down -v && docker compose up -d db` (the tests are
-not affected; they always use a fresh database).
+yourself first. The solutions add database migrations, so after switching branches reset
+the local database by running `docker compose down -v` and then `docker compose up -d db`
+(the tests are not affected; they always use a fresh database).
 
 For practice in refactoring messy code under tests, also try the Java version of the
 [Gilded Rose kata](https://github.com/emilybache/GildedRose-Refactoring-Kata).
