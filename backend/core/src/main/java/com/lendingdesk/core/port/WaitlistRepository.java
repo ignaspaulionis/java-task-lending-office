@@ -9,6 +9,8 @@ public interface WaitlistRepository {
   /** The queue of one device, first in line first. */
   List<WaitlistEntry> findByDevice(Long deviceId);
 
+  List<WaitlistEntry> findByEmployee(Long employeeId);
+
   /** The employee's position in every waitlist they are on, in the order they joined. */
   List<WaitlistPosition> findPositionsOfEmployee(Long employeeId);
 

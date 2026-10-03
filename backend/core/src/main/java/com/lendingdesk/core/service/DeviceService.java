@@ -9,6 +9,7 @@ import com.lendingdesk.core.model.DeviceSearch;
 import com.lendingdesk.core.model.PageResult;
 import com.lendingdesk.core.port.DeviceRepository;
 import com.lendingdesk.core.port.LoanRepository;
+import com.lendingdesk.core.port.WaitlistRepository;
 import jakarta.transaction.Transactional;
 import java.util.Set;
 
@@ -19,10 +20,13 @@ public class DeviceService {
 
   private final DeviceRepository devices;
   private final LoanRepository loans;
+  private final WaitlistRepository waitlist;
 
-  public DeviceService(DeviceRepository devices, LoanRepository loans) {
+  public DeviceService(
+      DeviceRepository devices, LoanRepository loans, WaitlistRepository waitlist) {
     this.devices = devices;
     this.loans = loans;
+    this.waitlist = waitlist;
   }
 
   /** One page of devices matching the search; ties in the sort order are broken by id. */
@@ -53,10 +57,19 @@ public class DeviceService {
     return toListItem(devices.save(new Device(inventoryTag, name, category)));
   }
 
-  /** Updates the mutable fields; the inventory tag and category never change. */
+  /**
+   * Updates the mutable fields; the inventory tag and category never change. A device on loan
+   * cannot be retired, and retiring a device clears its waitlist.
+   */
   @Transactional
   public DeviceListItem update(Long id, String name, DeviceStatus status) {
     Device device = find(id);
+    if (status == DeviceStatus.RETIRED && device.getStatus() != DeviceStatus.RETIRED) {
+      if (loans.findActiveByDevice(id).isPresent()) {
+        throw new LendingException(ErrorCode.DEVICE_ON_LOAN);
+      }
+      waitlist.findByDevice(id).forEach(waitlist::delete);
+    }
     device.setName(name);
     device.setStatus(status);
     return toListItem(devices.save(device));

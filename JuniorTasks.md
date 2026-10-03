@@ -62,3 +62,66 @@ At the moment, `GET /api/loans/overdue` loads all loans and filters them in Java
 - Returned loans are never listed.
 - The endpoint runs a single SQL query and loads only the overdue loans, no matter how
   many other loans exist.
+
+## J07 - Extend a loan
+At the moment, `POST /api/loans/{id}/extend` `{ employeeId }` moves the due date 7 days
+later for anyone, any number of times.
+- Only the borrower can extend: `409 NOT_LOAN_OWNER`.
+- A loan can be extended once (the `extended` column is already there):
+  `409 ALREADY_EXTENDED`.
+- An overdue loan cannot be extended: `409 LOAN_OVERDUE`.
+- A loan cannot be extended while someone is waiting for the device:
+  `409 DEVICE_RESERVED`.
+- Returned or unknown loans: `409 LOAN_ALREADY_RETURNED`, `404 LOAN_NOT_FOUND`.
+
+## J08 - Due dates skip weekends
+At the moment, a loan is always due exactly 14 days after borrowing, even on a weekend.
+- If the due date falls on a Saturday or Sunday in Vilnius, it moves to the following
+  Monday at the same local time.
+- "Weekend" is decided in Vilnius time, not UTC, and daylight saving time changes must
+  not shift the local time.
+
+## J09 - Deactivating an employee
+At the moment, `PUT /api/employees/{id}` with `active: false` always succeeds.
+- An employee who still holds loans cannot be deactivated: `409 EMPLOYEE_HAS_LOANS`.
+  Other changes (such as the name) are still allowed.
+- A deactivated employee is removed from every waitlist they are on.
+- An inactive employee can be reactivated.
+
+## J10 - Retiring a device
+At the moment, any device can be set to `RETIRED`.
+- A device on loan cannot be retired: `409 DEVICE_ON_LOAN`. Moving it to `MAINTENANCE`
+  is still allowed.
+- Retiring a device removes everyone from its waitlist.
+
+## J11 - Loan list without N+1
+At the moment, `GET /api/loans` runs one extra query per loan to read the device name.
+- The response is unchanged.
+- The list is a single SQL query, with or without the `employeeId` and `active` filters.
+
+## J12 - Index the foreign keys
+PostgreSQL does not index foreign key columns automatically, and `V1__init.sql` has no
+such indexes. Add a new Flyway migration; do not edit `V1`.
+- `loans.device_id`, `loans.employee_id`, `waitlist_entries.device_id` and
+  `waitlist_entries.employee_id` each start an index that covers all rows.
+- Be ready to read the query plan: the test runs `EXPLAIN` for "loans of one employee"
+  and expects an index to be usable.
+
+## J13 - Unique email enforced by the database
+At the moment, two employees can have the same email.
+- Creating or updating an employee with an email that another employee already has
+  returns `409 DUPLICATE_EMAIL`. Capitalisation does not matter.
+- Emails are stored in lowercase.
+- The database itself rejects duplicates, ignoring case (a unique index on
+  `lower(email)` in a new migration), so the rule also holds for data written without the
+  API.
+
+## J14 - Refactor the reminder service
+`GET /api/loans/{id}/reminder` returns a reminder text built by `ReminderService`. The
+code works but is hard to read: duplicated strings, magic numbers, nested conditions.
+1. Refactor it. The tests in `J14_…Test.CurrentBehaviour` already pass and must keep
+   passing.
+2. Then add a new rule: phones (`PHONE` category) are reminded 5 days before the due date
+   instead of 3 (`J14_…Test.PhoneReminders`).
+
+Be ready to explain each change you made and why.

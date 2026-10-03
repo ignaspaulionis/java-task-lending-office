@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -13,6 +14,22 @@ import java.time.temporal.ChronoUnit;
  * midnight (Europe/Vilnius) after its due time; every started local day costs a late fee.
  */
 public class LoanTerms {
+
+  /**
+   * The due date of a loan borrowed at {@code borrowedAt}: {@link LendingRules#LOAN_PERIOD}
+   * later, moved to Monday at the same local time if that is a weekend day in Vilnius.
+   */
+  public Instant dueDate(Instant borrowedAt) {
+    ZonedDateTime due = borrowedAt.plus(LendingRules.LOAN_PERIOD).atZone(LendingRules.LOCAL_ZONE);
+    int daysUntilMonday =
+        switch (due.getDayOfWeek()) {
+          case SATURDAY -> 2;
+          case SUNDAY -> 1;
+          default -> 0;
+        };
+    // plusDays works on the local date and time, so a DST change keeps the same local time.
+    return due.plusDays(daysUntilMonday).toInstant();
+  }
 
   public boolean isOverdue(Loan loan, Instant now) {
     return daysOverdue(loan, now) > 0;

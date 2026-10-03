@@ -9,6 +9,7 @@ import com.lendingdesk.core.service.DeviceService;
 import com.lendingdesk.core.service.EmployeeService;
 import com.lendingdesk.core.service.LoanService;
 import com.lendingdesk.core.service.LoanTerms;
+import com.lendingdesk.core.service.ReminderService;
 import com.lendingdesk.core.service.ReportService;
 import com.lendingdesk.core.service.WaitlistService;
 import java.time.Clock;
@@ -52,6 +53,12 @@ public class ServiceConfig {
   }
 
   @Bean
+  ReminderService reminderService(
+      LoanRepository loans, WaitlistRepository waitlist, Clock clock) {
+    return new ReminderService(loans, waitlist, clock);
+  }
+
+  @Bean
   EmployeeService employeeService(
       EmployeeRepository employees, LoanRepository loans, WaitlistRepository waitlist) {
     return new EmployeeService(employees, loans, waitlist);
@@ -68,7 +75,8 @@ public class ServiceConfig {
   }
 
   @Bean
-  DeviceService deviceService(DeviceRepository devices, LoanRepository loans) {
-    return new DeviceService(devices, loans);
+  DeviceService deviceService(
+      DeviceRepository devices, LoanRepository loans, WaitlistRepository waitlist) {
+    return new DeviceService(devices, loans, waitlist);
   }
 }

@@ -2,11 +2,14 @@ package com.lendingdesk.api.controller;
 
 import com.lendingdesk.api.ApiMapper;
 import com.lendingdesk.api.dto.BorrowRequest;
+import com.lendingdesk.api.dto.ExtendRequest;
 import com.lendingdesk.api.dto.LoanResponse;
+import com.lendingdesk.api.dto.ReminderResponse;
 import com.lendingdesk.api.dto.ReturnRequest;
 import com.lendingdesk.api.dto.ReturnResponse;
 import com.lendingdesk.core.model.ReturnResult;
 import com.lendingdesk.core.service.LoanService;
+import com.lendingdesk.core.service.ReminderService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -24,10 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoanController {
 
   private final LoanService loans;
+  private final ReminderService reminders;
   private final ApiMapper mapper;
 
-  public LoanController(LoanService loans, ApiMapper mapper) {
+  public LoanController(LoanService loans, ReminderService reminders, ApiMapper mapper) {
     this.loans = loans;
+    this.reminders = reminders;
     this.mapper = mapper;
   }
 
@@ -49,6 +54,16 @@ public class LoanController {
       @PathVariable Long id, @RequestBody @Valid ReturnRequest request) {
     ReturnResult result = loans.returnLoan(id, request.employeeId());
     return new ReturnResponse(mapper.toResponse(result.loan()), result.nextEmployeeId());
+  }
+
+  @PostMapping("/{id}/extend")
+  public LoanResponse extend(@PathVariable Long id, @RequestBody @Valid ExtendRequest request) {
+    return mapper.toResponse(loans.extend(id, request.employeeId()));
+  }
+
+  @GetMapping("/{id}/reminder")
+  public ReminderResponse reminder(@PathVariable Long id) {
+    return new ReminderResponse(reminders.reminder(id));
   }
 
   @GetMapping("/overdue")

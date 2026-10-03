@@ -24,6 +24,11 @@ public class LoanRepositoryAdapter implements LoanRepository {
   }
 
   @Override
+  public Optional<Loan> findById(Long id) {
+    return jpa.findById(id);
+  }
+
+  @Override
   public Optional<Loan> findByIdForUpdate(Long id) {
     return jpa.findByIdForUpdate(id);
   }
@@ -32,6 +37,8 @@ public class LoanRepositoryAdapter implements LoanRepository {
   public List<Loan> find(Long employeeId, Boolean active) {
     Specification<Loan> filter =
         (root, query, cb) -> {
+          // Load each loan's device in the same query; the API shows the device name.
+          root.fetch("device");
           List<Predicate> predicates = new ArrayList<>();
           if (employeeId != null) {
             predicates.add(cb.equal(root.get("employee").get("id"), employeeId));

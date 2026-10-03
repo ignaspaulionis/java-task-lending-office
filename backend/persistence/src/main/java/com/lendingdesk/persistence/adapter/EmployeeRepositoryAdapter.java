@@ -33,6 +33,11 @@ public class EmployeeRepositoryAdapter implements EmployeeRepository {
   }
 
   @Override
+  public Optional<Employee> findByEmail(String email) {
+    return jpa.findByEmail(email);
+  }
+
+  @Override
   public Employee save(Employee employee) {
     return jpa.save(employee);
   }

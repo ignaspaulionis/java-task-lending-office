@@ -107,6 +107,32 @@ public class LoanService {
     return loans.findActiveDueBefore(terms.overdueCutoff(clock.instant()));
   }
 
+  /** Gives the borrower {@link LendingRules#EXTENSION} more time. */
+  @Transactional
+  public Loan extend(Long loanId, Long employeeId) {
+    Loan loan =
+        loans
+            .findByIdForUpdate(loanId)
+            .orElseThrow(() -> new LendingException(ErrorCode.LOAN_NOT_FOUND));
+    if (!loan.isActive()) {
+      throw new LendingException(ErrorCode.LOAN_ALREADY_RETURNED);
+    }
+    if (!loan.getEmployee().getId().equals(employeeId)) {
+      throw new LendingException(ErrorCode.NOT_LOAN_OWNER);
+    }
+    if (terms.isOverdue(loan, clock.instant())) {
+      throw new LendingException(ErrorCode.LOAN_OVERDUE);
+    }
+    if (!waitlist.findByDevice(loan.getDevice().getId()).isEmpty()) {
+      throw new LendingException(ErrorCode.DEVICE_RESERVED);
+    }
+    if (loan.isExtended()) {
+      throw new LendingException(ErrorCode.ALREADY_EXTENDED);
+    }
+    loan.extend(LendingRules.EXTENSION);
+    return loans.save(loan);
+  }
+
   @Transactional
   public List<Loan> list(Long employeeId, Boolean active) {
     return loans.find(employeeId, active);
@@ -135,7 +161,7 @@ public class LoanService {
 
   private Loan lend(Device device, Employee employee) {
     Instant now = clock.instant();
-    return loans.save(new Loan(device, employee, now, now.plus(LendingRules.LOAN_PERIOD)));
+    return loans.save(new Loan(device, employee, now, terms.dueDate(now)));
   }
 
   private boolean hasReachedLoanLimit(Long employeeId) {

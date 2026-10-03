@@ -12,5 +12,8 @@ public interface EmployeeRepository {
 
   List<Employee> findAll();
 
+  /** Exact match; emails are stored in lowercase. */
+  Optional<Employee> findByEmail(String email);
+
   Employee save(Employee employee);
 }

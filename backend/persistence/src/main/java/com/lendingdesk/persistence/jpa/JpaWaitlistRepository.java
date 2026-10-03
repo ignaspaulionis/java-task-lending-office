@@ -10,6 +10,8 @@ public interface JpaWaitlistRepository extends JpaRepository<WaitlistEntry, Long
 
   List<WaitlistEntry> findByDeviceIdOrderByCreatedAtAscIdAsc(Long deviceId);
 
+  List<WaitlistEntry> findByEmployeeIdOrderByIdAsc(Long employeeId);
+
   Optional<WaitlistEntry> findByDeviceIdAndEmployeeId(Long deviceId, Long employeeId);
 
   /** Position = 1 + number of entries for the same device that are ahead in the queue. */
