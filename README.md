@@ -57,7 +57,9 @@ Errors are returned as `application/problem+json` with a `code`, e.g.
 - [MidTasks.md](MidTasks.md) - database design, query performance, concurrency, time and money
 
 Reference solutions are on the `solutions` branch, one commit per task. Try a task
-yourself first.
+yourself first. The solutions add a database migration, so after switching branches reset
+the local database with `docker compose down -v && docker compose up -d db` (the tests are
+not affected; they always use a fresh database).
 
 For practice in refactoring messy code under tests, also try the Java version of the
 [Gilded Rose kata](https://github.com/emilybache/GildedRose-Refactoring-Kata).
