@@ -62,14 +62,20 @@ public class LoanService {
     if (loans.findActiveByDevice(deviceId).isPresent()) {
       throw new LendingException(ErrorCode.DEVICE_ALREADY_LOANED);
     }
+    List<WaitlistEntry> queue = waitlist.findByDevice(deviceId);
+    if (!queue.isEmpty() && !queue.getFirst().getEmployee().getId().equals(employeeId)) {
+      throw new LendingException(ErrorCode.NOT_FIRST_IN_QUEUE);
+    }
     if (hasReachedLoanLimit(employeeId)) {
       throw new LendingException(ErrorCode.LOAN_LIMIT_REACHED);
     }
-    Instant now = clock.instant();
-    return loans.save(new Loan(device, employee, now, now.plus(LendingRules.LOAN_PERIOD)));
+    if (!queue.isEmpty()) {
+      waitlist.delete(queue.getFirst());
+    }
+    return lend(device, employee);
   }
 
-  /** Marks a loan as returned and reports who is next in the device's waitlist. */
+  /** Marks a loan as returned and hands the device to the next eligible employee in line. */
   @Transactional
   public ReturnResult returnLoan(Long loanId, Long employeeId) {
     Loan loan =
@@ -81,9 +87,9 @@ public class LoanService {
       throw new LendingException(ErrorCode.NOT_LOAN_OWNER);
     }
     loan.markReturned(clock.instant());
-    List<WaitlistEntry> queue = waitlist.findByDevice(loan.getDevice().getId());
-    Long next = queue.isEmpty() ? null : queue.get(0).getEmployee().getId();
-    return new ReturnResult(loans.save(loan), next);
+    // Flush now: the next loan of this device must not be inserted while this one looks active.
+    Loan returned = loans.saveAndFlush(loan);
+    return new ReturnResult(returned, handOver(loan.getDevice()));
   }
 
   /** Active loans whose due time has passed. */
@@ -96,6 +102,32 @@ public class LoanService {
   @Transactional
   public List<Loan> list(Long employeeId, Boolean active) {
     return loans.find(employeeId, active);
+  }
+
+  /**
+   * Lends the device to the first eligible employee in its waitlist. Ineligible employees are
+   * removed from the queue. A device that is not available is not handed over.
+   *
+   * @return the employee who got the device, or {@code null}
+   */
+  private Long handOver(Device device) {
+    if (device.getStatus() != DeviceStatus.AVAILABLE) {
+      return null;
+    }
+    for (WaitlistEntry entry : waitlist.findByDevice(device.getId())) {
+      waitlist.delete(entry);
+      Employee candidate = entry.getEmployee();
+      if (candidate.isActive() && !hasReachedLoanLimit(candidate.getId())) {
+        lend(device, candidate);
+        return candidate.getId();
+      }
+    }
+    return null;
+  }
+
+  private Loan lend(Device device, Employee employee) {
+    Instant now = clock.instant();
+    return loans.save(new Loan(device, employee, now, now.plus(LendingRules.LOAN_PERIOD)));
   }
 
   private boolean hasReachedLoanLimit(Long employeeId) {

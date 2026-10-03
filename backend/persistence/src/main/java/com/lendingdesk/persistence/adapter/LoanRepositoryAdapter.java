@@ -66,4 +66,9 @@ public class LoanRepositoryAdapter implements LoanRepository {
   public Loan save(Loan loan) {
     return jpa.save(loan);
   }
+
+  @Override
+  public Loan saveAndFlush(Loan loan) {
+    return jpa.saveAndFlush(loan);
+  }
 }

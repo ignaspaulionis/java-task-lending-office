@@ -19,4 +19,7 @@ public interface LoanRepository {
   Optional<Loan> findActiveByDevice(Long deviceId);
 
   Loan save(Loan loan);
+
+  /** Saves and writes pending changes to the database immediately. */
+  Loan saveAndFlush(Loan loan);
 }
