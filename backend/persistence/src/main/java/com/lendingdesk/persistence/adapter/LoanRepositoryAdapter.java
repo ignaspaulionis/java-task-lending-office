@@ -53,6 +53,11 @@ public class LoanRepositoryAdapter implements LoanRepository {
   }
 
   @Override
+  public long countActiveByEmployee(Long employeeId) {
+    return jpa.countByEmployeeIdAndReturnedAtIsNull(employeeId);
+  }
+
+  @Override
   public Optional<Loan> findActiveByDevice(Long deviceId) {
     return jpa.findByDeviceIdAndReturnedAtIsNull(deviceId);
   }

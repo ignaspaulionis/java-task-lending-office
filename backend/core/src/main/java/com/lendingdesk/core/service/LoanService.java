@@ -62,7 +62,7 @@ public class LoanService {
     if (loans.findActiveByDevice(deviceId).isPresent()) {
       throw new LendingException(ErrorCode.DEVICE_ALREADY_LOANED);
     }
-    if (!canBorrowMore(employeeId)) {
+    if (hasReachedLoanLimit(employeeId)) {
       throw new LendingException(ErrorCode.LOAN_LIMIT_REACHED);
     }
     Instant now = clock.instant();
@@ -98,13 +98,7 @@ public class LoanService {
     return loans.find(employeeId, active);
   }
 
-  private boolean canBorrowMore(Long employeeId) {
-    int active = 0;
-    for (Loan loan : loans.findAll()) {
-      if (loan.isActive() && loan.getEmployee().getId().equals(employeeId)) {
-        active++;
-      }
-    }
-    return active <= LendingRules.MAX_ACTIVE_LOANS;
+  private boolean hasReachedLoanLimit(Long employeeId) {
+    return loans.countActiveByEmployee(employeeId) >= LendingRules.MAX_ACTIVE_LOANS;
   }
 }

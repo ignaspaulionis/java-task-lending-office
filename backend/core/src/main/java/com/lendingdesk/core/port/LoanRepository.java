@@ -14,6 +14,8 @@ public interface LoanRepository {
 
   List<Loan> findActiveByEmployee(Long employeeId);
 
+  long countActiveByEmployee(Long employeeId);
+
   Optional<Loan> findActiveByDevice(Long deviceId);
 
   Loan save(Loan loan);

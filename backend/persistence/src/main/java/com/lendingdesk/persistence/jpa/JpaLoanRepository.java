@@ -12,4 +12,6 @@ public interface JpaLoanRepository
   List<Loan> findByEmployeeIdAndReturnedAtIsNullOrderByIdAsc(Long employeeId);
 
   Optional<Loan> findByDeviceIdAndReturnedAtIsNull(Long deviceId);
+
+  long countByEmployeeIdAndReturnedAtIsNull(Long employeeId);
 }
