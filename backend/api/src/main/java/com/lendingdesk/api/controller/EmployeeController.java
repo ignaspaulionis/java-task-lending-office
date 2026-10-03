@@ -4,6 +4,7 @@ import com.lendingdesk.api.ApiMapper;
 import com.lendingdesk.api.dto.CreateEmployeeRequest;
 import com.lendingdesk.api.dto.EmployeeResponse;
 import com.lendingdesk.api.dto.EmployeeSummaryResponse;
+import com.lendingdesk.api.dto.LoanHistoryEntryResponse;
 import com.lendingdesk.api.dto.UpdateEmployeeRequest;
 import com.lendingdesk.api.dto.WaitlistPositionResponse;
 import com.lendingdesk.core.model.EmployeeSummary;
@@ -48,6 +49,20 @@ public class EmployeeController {
       @PathVariable Long id, @RequestBody @Valid UpdateEmployeeRequest request) {
     return mapper.toResponse(
         employees.update(id, request.name(), request.email(), request.active()));
+  }
+
+  @GetMapping("/{id}/loan-history")
+  public List<LoanHistoryEntryResponse> loanHistory(@PathVariable Long id) {
+    return employees.loanHistory(id).stream()
+        .map(
+            loan ->
+                new LoanHistoryEntryResponse(
+                    loan.getId(),
+                    loan.getDevice().getId(),
+                    loan.getDevice().getName(),
+                    loan.getBorrowedAt(),
+                    loan.getReturnedAt()))
+        .toList();
   }
 
   @GetMapping("/{id}/summary")

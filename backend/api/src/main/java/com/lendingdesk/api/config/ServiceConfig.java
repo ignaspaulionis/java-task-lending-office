@@ -7,7 +7,9 @@ import com.lendingdesk.core.port.WaitlistRepository;
 import com.lendingdesk.core.service.DeviceImportService;
 import com.lendingdesk.core.service.DeviceService;
 import com.lendingdesk.core.service.EmployeeService;
+import com.lendingdesk.core.service.LoanCancellationService;
 import com.lendingdesk.core.service.LoanService;
+import com.lendingdesk.core.service.LoanTransferService;
 import com.lendingdesk.core.service.LoanTerms;
 import com.lendingdesk.core.service.ReminderService;
 import com.lendingdesk.core.service.ReportService;
@@ -50,6 +52,17 @@ public class ServiceConfig {
       LoanService loanService,
       Clock clock) {
     return new WaitlistService(waitlist, devices, employees, loans, loanService, clock);
+  }
+
+  @Bean
+  LoanCancellationService loanCancellationService(LoanRepository loans, Clock clock) {
+    return new LoanCancellationService(loans, clock);
+  }
+
+  @Bean
+  LoanTransferService loanTransferService(
+      LoanRepository loans, DeviceRepository devices, EmployeeRepository employees, Clock clock) {
+    return new LoanTransferService(loans, devices, employees, clock);
   }
 
   @Bean

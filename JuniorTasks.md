@@ -125,3 +125,46 @@ code works but is hard to read: duplicated strings, magic numbers, nested condit
    instead of 3 (`J14_…Test.PhoneReminders`).
 
 Be ready to explain each change you made and why.
+
+## J15 - Bug hunt: cancelling a loan
+`POST /api/loans/{id}/cancel` `{ employeeId }` lets the borrower undo a loan within 15
+minutes. The tests in `J15_…Test` pass. This bug report came in from production:
+
+> "I borrowed the wrong laptop and pressed *Cancel* straight away, but I got
+> `NOT_LOAN_OWNER`. It was my own loan!" — we have about 2,000 employees.
+
+1. Write a test in `J15_…Test` that reproduces the bug. It must fail before your fix.
+   (Every test starts with an empty database, so ids start at 1.)
+2. Fix the bug and explain why the existing tests did not catch it.
+
+## J16 - Transaction bug: transferring a loan
+`POST /api/loans/{id}/transfer` `{ fromEmployeeId, toEmployeeId }` hands a device over to a
+colleague; the colleague's new loan keeps the original due date. Bug report:
+
+> "I tried to give my monitor to Jonas. The app said he already has too many loans,
+> fine — but now the monitor isn't mine any more either!"
+
+- A transfer that fails (colleague unknown, inactive or at the loan limit) must change
+  nothing: the original borrower still holds the device.
+- Find out why the code looks transactional but isn't, fix it, and be ready to explain it.
+
+## J17 - Validation errors per field
+At the moment, every invalid request returns just `400 { "code": "VALIDATION_FAILED" }`.
+- Problem responses for invalid requests also contain `errors`: a list of
+  `{ field, message }`, sorted by field name. A body that isn't valid JSON gives an empty
+  list.
+- Replace the `@Pattern` on `CreateDeviceRequest.inventoryTag` with your own constraint
+  annotation `@InventoryTag` whose message is `must start with NTL-`.
+
+## J18 - New endpoint: loan history
+Add `GET /api/employees/{id}/loan-history`. Nothing exists for it yet: create the
+controller method, response DTO, service method, repository method and query yourself,
+following the structure of the existing code (`api` → `core` → `persistence`).
+- Returns the employee's **returned** loans, most recently returned first:
+  `[{ loanId, deviceId, deviceName, borrowedAt, returnedAt }]`.
+- An unknown employee returns `404 EMPLOYEE_NOT_FOUND`; no returned loans gives `[]`.
+- At most 2 SQL queries, however many loans there are.
+
+## Questions
+[QUESTIONS.md](QUESTIONS.md) has questions about this code base to answer in writing —
+practice for explaining your reasoning in the interview.

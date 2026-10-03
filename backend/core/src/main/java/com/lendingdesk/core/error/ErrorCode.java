@@ -21,6 +21,7 @@ public enum ErrorCode {
   EMPLOYEE_HAS_LOANS(Kind.CONFLICT),
   DEVICE_ON_LOAN(Kind.CONFLICT),
   DUPLICATE_EMAIL(Kind.CONFLICT),
+  CANCEL_WINDOW_CLOSED(Kind.CONFLICT),
   VALIDATION_FAILED(Kind.INVALID);
 
   /** How the API layer should classify the error. */

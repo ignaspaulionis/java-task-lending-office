@@ -17,6 +17,9 @@ public interface LoanRepository {
 
   List<Loan> findActiveByEmployee(Long employeeId);
 
+  /** Returned loans of the employee with their devices, most recently returned first. */
+  List<Loan> findReturnedByEmployee(Long employeeId);
+
   long countActiveByEmployee(Long employeeId);
 
   /** Active loans due before {@code cutoff}, most overdue first, with their devices. */
@@ -31,4 +34,6 @@ public interface LoanRepository {
 
   /** Saves and writes pending changes to the database immediately. */
   Loan saveAndFlush(Loan loan);
+
+  void delete(Loan loan);
 }

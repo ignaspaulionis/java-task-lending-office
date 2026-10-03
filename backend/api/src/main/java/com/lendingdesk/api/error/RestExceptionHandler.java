@@ -2,6 +2,8 @@ package com.lendingdesk.api.error;
 
 import com.lendingdesk.core.error.ErrorCode;
 import com.lendingdesk.core.error.LendingException;
+import java.util.Comparator;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -36,8 +38,17 @@ public class RestExceptionHandler {
     return problem(status, e.code().name(), e.getMessage());
   }
 
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ProblemDetail> handleInvalidBody(MethodArgumentNotValidException e) {
+    List<FieldError> errors =
+        e.getBindingResult().getFieldErrors().stream()
+            .map(error -> new FieldError(error.getField(), error.getDefaultMessage()))
+            .sorted(Comparator.comparing(FieldError::field).thenComparing(FieldError::message))
+            .toList();
+    return invalid(errors);
+  }
+
   @ExceptionHandler({
-    MethodArgumentNotValidException.class,
     HandlerMethodValidationException.class,
     MethodArgumentTypeMismatchException.class,
     MissingServletRequestParameterException.class,
@@ -46,8 +57,18 @@ public class RestExceptionHandler {
     HttpMessageNotReadableException.class
   })
   public ResponseEntity<ProblemDetail> handleInvalidRequest(Exception e) {
-    return problem(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED.name(), "Invalid request");
+    return invalid(List.of());
   }
+
+  private static ResponseEntity<ProblemDetail> invalid(List<FieldError> errors) {
+    ResponseEntity<ProblemDetail> response =
+        problem(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED.name(), "Invalid request");
+    response.getBody().setProperty("errors", errors);
+    return response;
+  }
+
+  /** One invalid field of a request body. */
+  public record FieldError(String field, String message) {}
 
   @ExceptionHandler(NoResourceFoundException.class)
   public ResponseEntity<ProblemDetail> handleNoResource(NoResourceFoundException e) {

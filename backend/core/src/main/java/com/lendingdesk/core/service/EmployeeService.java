@@ -1,6 +1,7 @@
 package com.lendingdesk.core.service;
 
 import com.lendingdesk.core.domain.Employee;
+import com.lendingdesk.core.domain.Loan;
 import com.lendingdesk.core.error.ErrorCode;
 import com.lendingdesk.core.error.LendingException;
 import com.lendingdesk.core.model.EmployeeSummary;
@@ -77,6 +78,13 @@ public class EmployeeService {
     Employee employee = get(id);
     return new EmployeeSummary(
         employee, loans.findActiveByEmployee(id), waitlist.findPositionsOfEmployee(id));
+  }
+
+  /** The employee's returned loans, most recently returned first. */
+  @Transactional
+  public List<Loan> loanHistory(Long id) {
+    get(id);
+    return loans.findReturnedByEmployee(id);
   }
 
   private Employee get(Long id) {

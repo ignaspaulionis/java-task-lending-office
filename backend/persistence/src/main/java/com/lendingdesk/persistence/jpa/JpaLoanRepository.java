@@ -26,6 +26,14 @@ public interface JpaLoanRepository
       """)
   List<Loan> findActiveByEmployeeWithDevice(Long employeeId);
 
+  @Query(
+      """
+      select l from Loan l join fetch l.device
+      where l.employee.id = :employeeId and l.returnedAt is not null
+      order by l.returnedAt desc, l.id desc
+      """)
+  List<Loan> findReturnedByEmployee(Long employeeId);
+
   Optional<Loan> findByDeviceIdAndReturnedAtIsNull(Long deviceId);
 
   long countByEmployeeIdAndReturnedAtIsNull(Long employeeId);

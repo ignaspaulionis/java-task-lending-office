@@ -58,6 +58,11 @@ public class LoanRepositoryAdapter implements LoanRepository {
   }
 
   @Override
+  public List<Loan> findReturnedByEmployee(Long employeeId) {
+    return jpa.findReturnedByEmployee(employeeId);
+  }
+
+  @Override
   public long countActiveByEmployee(Long employeeId) {
     return jpa.countByEmployeeIdAndReturnedAtIsNull(employeeId);
   }
@@ -87,5 +92,10 @@ public class LoanRepositoryAdapter implements LoanRepository {
   @Override
   public Loan saveAndFlush(Loan loan) {
     return jpa.saveAndFlush(loan);
+  }
+
+  @Override
+  public void delete(Loan loan) {
+    jpa.delete(loan);
   }
 }
