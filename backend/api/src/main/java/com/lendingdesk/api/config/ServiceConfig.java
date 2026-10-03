@@ -4,6 +4,7 @@ import com.lendingdesk.core.port.DeviceRepository;
 import com.lendingdesk.core.port.EmployeeRepository;
 import com.lendingdesk.core.port.LoanRepository;
 import com.lendingdesk.core.port.WaitlistRepository;
+import com.lendingdesk.core.service.DeviceImportService;
 import com.lendingdesk.core.service.DeviceService;
 import com.lendingdesk.core.service.EmployeeService;
 import com.lendingdesk.core.service.LoanService;
@@ -53,6 +54,11 @@ public class ServiceConfig {
   EmployeeService employeeService(
       EmployeeRepository employees, LoanRepository loans, WaitlistRepository waitlist) {
     return new EmployeeService(employees, loans, waitlist);
+  }
+
+  @Bean
+  DeviceImportService deviceImportService(DeviceRepository devices) {
+    return new DeviceImportService(devices);
   }
 
   @Bean

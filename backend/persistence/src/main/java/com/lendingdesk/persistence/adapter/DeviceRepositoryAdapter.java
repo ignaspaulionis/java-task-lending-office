@@ -10,11 +10,13 @@ import com.lendingdesk.persistence.jpa.JpaDeviceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -44,6 +46,14 @@ public class DeviceRepositoryAdapter implements DeviceRepository {
   @Override
   public boolean existsByInventoryTag(String inventoryTag) {
     return jpa.existsByInventoryTag(inventoryTag);
+  }
+
+  @Override
+  public Set<String> findExistingTags(Collection<String> inventoryTags) {
+    if (inventoryTags.isEmpty()) {
+      return Set.of();
+    }
+    return Set.copyOf(jpa.findExistingTags(inventoryTags));
   }
 
   @Override

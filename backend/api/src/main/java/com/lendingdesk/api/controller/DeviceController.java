@@ -3,15 +3,20 @@ package com.lendingdesk.api.controller;
 import com.lendingdesk.api.ApiMapper;
 import com.lendingdesk.api.dto.CreateDeviceRequest;
 import com.lendingdesk.api.dto.DeviceResponse;
+import com.lendingdesk.api.dto.ImportReportResponse;
 import com.lendingdesk.api.dto.PageResponse;
 import com.lendingdesk.api.dto.UpdateDeviceRequest;
 import com.lendingdesk.core.model.DeviceListItem;
 import com.lendingdesk.core.model.DeviceSearch;
+import com.lendingdesk.core.model.ImportReport;
 import com.lendingdesk.core.model.PageResult;
+import com.lendingdesk.core.service.DeviceImportService;
 import com.lendingdesk.core.service.DeviceService;
 import com.lendingdesk.core.error.ErrorCode;
 import com.lendingdesk.core.error.LendingException;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,10 +36,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class DeviceController {
 
   private final DeviceService devices;
+  private final DeviceImportService imports;
   private final ApiMapper mapper;
 
-  public DeviceController(DeviceService devices, ApiMapper mapper) {
+  public DeviceController(DeviceService devices, DeviceImportService imports, ApiMapper mapper) {
     this.devices = devices;
+    this.imports = imports;
     this.mapper = mapper;
   }
 
@@ -87,7 +94,13 @@ public class DeviceController {
   }
 
   @PostMapping("/import")
-  public Object importCsv(@RequestPart("file") MultipartFile file) {
-    throw new UnsupportedOperationException("CSV import is not implemented yet");
+  public ImportReportResponse importCsv(@RequestPart("file") MultipartFile file)
+      throws IOException {
+    ImportReport report = imports.importCsv(new String(file.getBytes(), StandardCharsets.UTF_8));
+    return new ImportReportResponse(
+        report.imported(),
+        report.errors().stream()
+            .map(e -> new ImportReportResponse.Error(e.line(), e.reason().name()))
+            .toList());
   }
 }
