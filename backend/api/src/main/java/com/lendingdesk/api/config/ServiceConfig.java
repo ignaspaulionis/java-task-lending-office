@@ -43,8 +43,10 @@ public class ServiceConfig {
       WaitlistRepository waitlist,
       DeviceRepository devices,
       EmployeeRepository employees,
+      LoanRepository loans,
+      LoanService loanService,
       Clock clock) {
-    return new WaitlistService(waitlist, devices, employees, clock);
+    return new WaitlistService(waitlist, devices, employees, loans, loanService, clock);
   }
 
   @Bean
