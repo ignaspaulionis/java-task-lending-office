@@ -74,6 +74,12 @@ public class LoanService {
   public ReturnResult returnLoan(Long loanId, Long employeeId) {
     Loan loan =
         loans.findById(loanId).orElseThrow(() -> new LendingException(ErrorCode.LOAN_NOT_FOUND));
+    if (!loan.isActive()) {
+      throw new LendingException(ErrorCode.LOAN_ALREADY_RETURNED);
+    }
+    if (!loan.getEmployee().getId().equals(employeeId)) {
+      throw new LendingException(ErrorCode.NOT_LOAN_OWNER);
+    }
     loan.markReturned(clock.instant());
     List<WaitlistEntry> queue = waitlist.findByDevice(loan.getDevice().getId());
     Long next = queue.isEmpty() ? null : queue.get(0).getEmployee().getId();
