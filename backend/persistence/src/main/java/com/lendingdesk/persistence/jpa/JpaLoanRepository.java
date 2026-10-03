@@ -11,7 +11,13 @@ import org.springframework.data.jpa.repository.Query;
 public interface JpaLoanRepository
     extends JpaRepository<Loan, Long>, JpaSpecificationExecutor<Loan> {
 
-  List<Loan> findByEmployeeIdAndReturnedAtIsNullOrderByIdAsc(Long employeeId);
+  @Query(
+      """
+      select l from Loan l join fetch l.device
+      where l.employee.id = :employeeId and l.returnedAt is null
+      order by l.id
+      """)
+  List<Loan> findActiveByEmployeeWithDevice(Long employeeId);
 
   Optional<Loan> findByDeviceIdAndReturnedAtIsNull(Long deviceId);
 

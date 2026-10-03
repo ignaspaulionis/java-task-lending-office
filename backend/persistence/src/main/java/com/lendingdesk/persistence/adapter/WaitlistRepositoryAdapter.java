@@ -1,6 +1,7 @@
 package com.lendingdesk.persistence.adapter;
 
 import com.lendingdesk.core.domain.WaitlistEntry;
+import com.lendingdesk.core.model.WaitlistPosition;
 import com.lendingdesk.core.port.WaitlistRepository;
 import com.lendingdesk.persistence.jpa.JpaWaitlistRepository;
 import java.util.List;
@@ -22,8 +23,13 @@ public class WaitlistRepositoryAdapter implements WaitlistRepository {
   }
 
   @Override
-  public List<WaitlistEntry> findByEmployee(Long employeeId) {
-    return jpa.findByEmployeeIdOrderByIdAsc(employeeId);
+  public List<WaitlistPosition> findPositionsOfEmployee(Long employeeId) {
+    return jpa.findPositionsOfEmployee(employeeId).stream()
+        .map(
+            row ->
+                new WaitlistPosition(
+                    row.getDeviceId(), row.getDeviceName(), row.getPosition().intValue()))
+        .toList();
   }
 
   @Override

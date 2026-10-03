@@ -50,7 +50,7 @@ public class LoanRepositoryAdapter implements LoanRepository {
 
   @Override
   public List<Loan> findActiveByEmployee(Long employeeId) {
-    return jpa.findByEmployeeIdAndReturnedAtIsNullOrderByIdAsc(employeeId);
+    return jpa.findActiveByEmployeeWithDevice(employeeId);
   }
 
   @Override
