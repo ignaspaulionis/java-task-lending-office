@@ -1,0 +1,40 @@
+plugins {
+    alias(libs.plugins.spring.boot) apply false
+}
+
+def springBootBom = libs.spring.boot.dependencies
+
+subprojects {
+    apply plugin: 'java'
+
+    group = 'com.lendingdesk'
+    version = '1.0.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    dependencies {
+        implementation platform(springBootBom)
+        testImplementation platform(springBootBom)
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.compilerArgs << '-parameters'
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        testLogging {
+            events 'failed'
+            exceptionFormat 'short'
+        }
+    }
+}

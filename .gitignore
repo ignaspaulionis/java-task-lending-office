@@ -1,0 +1,16 @@
+# Local configuration
+.env
+
+# Build output
+build/
+.gradle/
+out/
+node_modules/
+dist/
+.angular/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store

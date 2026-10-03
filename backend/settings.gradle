@@ -1,0 +1,5 @@
+rootProject.name = 'lending-desk'
+
+include 'core'
+include 'persistence'
+include 'api'

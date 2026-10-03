@@ -1,0 +1,36 @@
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+main {
+  display: grid;
+  gap: 2rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.message {
+  padding: 0.5rem 0.75rem;
+  background: #e8f5e9;
+}
+
+.message.error {
+  background: #fdecea;
+}

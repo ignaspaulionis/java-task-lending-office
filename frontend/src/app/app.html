@@ -1,0 +1,108 @@
+<header>
+  <h1>Lending Desk</h1>
+  <label>
+    Acting as
+    <select [ngModel]="employeeId()" (ngModelChange)="selectEmployee($event)">
+      @for (employee of employees(); track employee.id) {
+        <option [ngValue]="employee.id">
+          {{ employee.name }}{{ employee.active ? '' : ' (inactive)' }}
+        </option>
+      }
+    </select>
+  </label>
+</header>
+
+@if (message()) {
+  <p class="message" [class.error]="failed()">{{ message() }}</p>
+}
+
+<main>
+  <section>
+    <h2>Devices</h2>
+    <input placeholder="Search name or tag" [ngModel]="query()" (ngModelChange)="search($event)" />
+    @if (devices(); as page) {
+      <table>
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Holder</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (device of page.items; track device.id) {
+            <tr>
+              <td>{{ device.inventoryTag }}</td>
+              <td>{{ device.name }}</td>
+              <td>{{ device.category }}</td>
+              <td>{{ device.status }}</td>
+              <td>{{ device.loanedTo ? employeeNames().get(device.loanedTo) : '' }}</td>
+              <td class="actions">
+                <button (click)="borrow(device)">Borrow</button>
+                <button (click)="join(device)">Join waitlist</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">No devices</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <p class="pager">
+        <button [disabled]="page.page === 0" (click)="goToPage(page.page - 1)">Previous</button>
+        Page {{ page.page + 1 }} of {{ page.totalPages || 1 }} ({{ page.totalElements }} devices)
+        <button [disabled]="page.page + 1 >= page.totalPages" (click)="goToPage(page.page + 1)">
+          Next
+        </button>
+      </p>
+    }
+  </section>
+
+  @if (summary(); as summary) {
+    <section>
+      <h2>{{ summary.employee.name }}'s loans</h2>
+      <ul>
+        @for (loan of summary.loans; track loan.id) {
+          <li>
+            {{ loan.deviceName }}, due {{ loan.dueAt | date: 'yyyy-MM-dd HH:mm' }}
+            @if (loan.overdue) {
+              <strong>overdue</strong>
+            }
+            <button (click)="returnLoan(loan)">Return</button>
+          </li>
+        } @empty {
+          <li>No active loans</li>
+        }
+      </ul>
+      <h2>Waitlists</h2>
+      <ul>
+        @for (entry of summary.waitlist; track entry.deviceId) {
+          <li>
+            #{{ entry.position }} for {{ entry.deviceName }}
+            <button (click)="leave(entry.deviceId, entry.deviceName)">Leave</button>
+          </li>
+        } @empty {
+          <li>Not waiting for anything</li>
+        }
+      </ul>
+    </section>
+  }
+
+  <section>
+    <h2>Overdue</h2>
+    <ul>
+      @for (loan of overdue(); track loan.id) {
+        <li>
+          {{ loan.deviceName }} ({{ employeeNames().get(loan.employeeId) }}), due
+          {{ loan.dueAt | date: 'yyyy-MM-dd' }}
+        </li>
+      } @empty {
+        <li>Nothing overdue</li>
+      }
+    </ul>
+  </section>
+</main>
