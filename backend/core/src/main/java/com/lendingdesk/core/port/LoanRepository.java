@@ -1,6 +1,7 @@
 package com.lendingdesk.core.port;
 
 import com.lendingdesk.core.domain.Loan;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,9 @@ public interface LoanRepository {
   List<Loan> findActiveByEmployee(Long employeeId);
 
   long countActiveByEmployee(Long employeeId);
+
+  /** Active loans due before {@code cutoff}, most overdue first, with their devices. */
+  List<Loan> findActiveDueBefore(Instant cutoff);
 
   Optional<Loan> findActiveByDevice(Long deviceId);
 

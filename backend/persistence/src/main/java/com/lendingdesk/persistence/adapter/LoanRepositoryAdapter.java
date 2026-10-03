@@ -4,6 +4,7 @@ import com.lendingdesk.core.domain.Loan;
 import com.lendingdesk.core.port.LoanRepository;
 import com.lendingdesk.persistence.jpa.JpaLoanRepository;
 import jakarta.persistence.criteria.Predicate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,6 +56,11 @@ public class LoanRepositoryAdapter implements LoanRepository {
   @Override
   public long countActiveByEmployee(Long employeeId) {
     return jpa.countByEmployeeIdAndReturnedAtIsNull(employeeId);
+  }
+
+  @Override
+  public List<Loan> findActiveDueBefore(Instant cutoff) {
+    return jpa.findActiveDueBefore(cutoff);
   }
 
   @Override
