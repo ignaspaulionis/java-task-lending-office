@@ -2,6 +2,7 @@ package com.lendingdesk.core.service;
 
 import com.lendingdesk.core.LendingRules;
 import com.lendingdesk.core.domain.Device;
+import com.lendingdesk.core.domain.DeviceStatus;
 import com.lendingdesk.core.domain.Employee;
 import com.lendingdesk.core.domain.Loan;
 import com.lendingdesk.core.domain.WaitlistEntry;
@@ -52,6 +53,15 @@ public class LoanService {
         devices
             .findById(deviceId)
             .orElseThrow(() -> new LendingException(ErrorCode.DEVICE_NOT_FOUND));
+    if (!employee.isActive()) {
+      throw new LendingException(ErrorCode.EMPLOYEE_INACTIVE);
+    }
+    if (device.getStatus() != DeviceStatus.AVAILABLE) {
+      throw new LendingException(ErrorCode.DEVICE_NOT_AVAILABLE);
+    }
+    if (loans.findActiveByDevice(deviceId).isPresent()) {
+      throw new LendingException(ErrorCode.DEVICE_ALREADY_LOANED);
+    }
     if (!canBorrowMore(employeeId)) {
       throw new LendingException(ErrorCode.LOAN_LIMIT_REACHED);
     }
