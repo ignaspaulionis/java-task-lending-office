@@ -61,4 +61,9 @@ public class LoanRepositoryAdapter implements LoanRepository {
   public Loan save(Loan loan) {
     return jpa.save(loan);
   }
+
+  @Override
+  public void delete(Loan loan) {
+    jpa.delete(loan);
+  }
 }

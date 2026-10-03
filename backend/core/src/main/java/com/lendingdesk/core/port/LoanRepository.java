@@ -17,4 +17,6 @@ public interface LoanRepository {
   Optional<Loan> findActiveByDevice(Long deviceId);
 
   Loan save(Loan loan);
+
+  void delete(Loan loan);
 }
